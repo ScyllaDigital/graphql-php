@@ -58,10 +58,9 @@ class KnownTypeNames extends ValidationRule
     }
 
     /**
-     * @param string   $type
-     * @param string[] $suggestedTypes
+     * @param array<string> $suggestedTypes
      */
-    public static function unknownTypeMessage($type, array $suggestedTypes)
+    public static function unknownTypeMessage(string $type, array $suggestedTypes): string
     {
         $message = sprintf('Unknown type "%s".', $type);
         if (count($suggestedTypes) > 0) {

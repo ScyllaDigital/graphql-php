@@ -31,9 +31,11 @@ abstract class ValidatorTestCase extends TestCase
 
     protected function expectValid($schema, $rules, $queryString, $options = []): void
     {
+        $errors = DocumentValidator::validate($schema, Parser::parse($queryString, $options), $rules);
+        var_dump($errors);
         self::assertEquals(
             [],
-            DocumentValidator::validate($schema, Parser::parse($queryString, $options), $rules),
+            $errors,
             'Should validate'
         );
     }

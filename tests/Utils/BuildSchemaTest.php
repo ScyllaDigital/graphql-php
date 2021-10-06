@@ -20,7 +20,9 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use GraphQL\Type\Introspection;
 use GraphQL\Utils\BuildSchema;
 use GraphQL\Utils\SchemaPrinter;
 use PHPUnit\Framework\TestCase;
@@ -965,6 +967,29 @@ type Query {
     }
 
     /**
+     * @see it('Do not override standard types')
+     */
+    public function testDoNotOverrideStandardTypes(): void
+    {
+        $schema = BuildSchema::build('
+      scalar ID
+
+      scalar __Schema
+        ');
+
+        self::assertSame($schema->getType('ID'), Type::id());
+        self::assertSame($schema->getType('__Schema'), Introspection::_schema());
+    }
+
+    public function testDoesNotIncludeUnusedStandardTypes(): void
+    {
+        $schema = BuildSchema::build('
+      scalar __Schema
+        ');
+        self::assertNull($schema->getType('ID'));
+    }
+
+    /**
      * @see it('Rejects invalid SDL')
      */
     public function testRejectsInvalidSDL(): void
@@ -995,11 +1020,20 @@ type Query {
         self::assertTrue(true);
     }
 
-    // Describe: Failures
-
     /**
-     * @see it('Allows only a single query type')
+     * @see it('Throws on unknown types')
      */
+    public function testThrowsOnUnknownTypes(): void
+    {
+        $this->expectException(Error::class);
+        $this->expectExceptionObject(new Error('Unknown type: "UnknownType".'));
+        BuildSchema::build('
+      type Query {
+        unknown: UnknownType
+      }
+', null, ['assumeValidSDL' => true])->assertValid();
+    }
+
     public function testAllowsOnlySingleQueryType(): void
     {
         $this->expectException(Error::class);
@@ -1022,9 +1056,6 @@ type Yellow {
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Allows only a single mutation type')
-     */
     public function testAllowsOnlySingleMutationType(): void
     {
         $this->expectException(Error::class);
@@ -1048,9 +1079,6 @@ type Yellow {
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Allows only a single subscription type')
-     */
     public function testAllowsOnlySingleSubscriptionType(): void
     {
         $this->expectException(Error::class);
@@ -1095,9 +1123,6 @@ type Hello {
         $schema->getTypeMap();
     }
 
-    /**
-     * @see it('Unknown type in interface list')
-     */
     public function testUnknownTypeInInterfaceList(): void
     {
         $this->expectException(Error::class);
@@ -1112,9 +1137,6 @@ type Query implements Bar {
         $schema->getTypeMap();
     }
 
-    /**
-     * @see it('Unknown type in union list')
-     */
     public function testUnknownTypeInUnionList(): void
     {
         $this->expectException(Error::class);
@@ -1128,9 +1150,6 @@ type Query { testUnion: TestUnion }
         $schema->getTypeMap();
     }
 
-    /**
-     * @see it('Unknown query type')
-     */
     public function testUnknownQueryType(): void
     {
         $this->expectException(Error::class);
@@ -1148,9 +1167,6 @@ type Hello {
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Unknown mutation type')
-     */
     public function testUnknownMutationType(): void
     {
         $this->expectException(Error::class);

@@ -21,7 +21,6 @@ use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\ValidationRule;
 
-use function array_values;
 use function count;
 
 /**
@@ -173,31 +172,32 @@ class GraphQL
     }
 
     /**
-     * Returns directives defined in GraphQL spec
+     * Returns directives defined in GraphQL spec.
      *
-     * @return Directive[]
+     * @return array<string, Directive>
      *
      * @api
      */
     public static function getStandardDirectives(): array
     {
-        return array_values(Directive::getInternalDirectives());
+        return Directive::getInternalDirectives();
     }
 
     /**
-     * Returns types defined in GraphQL spec
+     * Returns types defined in GraphQL spec.
      *
-     * @return Type[]
+     * @return array<string, ScalarType>
      *
      * @api
      */
     public static function getStandardTypes(): array
     {
-        return array_values(Type::getStandardTypes());
+        return Type::getStandardTypes();
     }
 
     /**
-     * Replaces standard types with types from this list (matching by name)
+     * Replaces standard types with types from this list (matching by name).
+     *
      * Standard types not listed here remain untouched.
      *
      * @param array<string, ScalarType> $types
@@ -210,19 +210,19 @@ class GraphQL
     }
 
     /**
-     * Returns standard validation rules implementing GraphQL spec
+     * Returns standard validation rules implementing GraphQL spec.
      *
-     * @return ValidationRule[]
+     * @return array<string, ValidationRule>
      *
      * @api
      */
     public static function getStandardValidationRules(): array
     {
-        return array_values(DocumentValidator::defaultRules());
+        return DocumentValidator::defaultRules();
     }
 
     /**
-     * Set default resolver implementation
+     * Set default resolver implementation.
      *
      * @api
      */

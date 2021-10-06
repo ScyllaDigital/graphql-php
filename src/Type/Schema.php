@@ -160,7 +160,8 @@ class Schema
             }
         }
 
-        $this->resolvedTypes += Type::getStandardTypes() + Introspection::getTypes();
+//        $this->resolvedTypes += Type::getStandardTypes();
+        $this->resolvedTypes += Introspection::getTypes();
 
         if ($this->config->typeLoader !== null) {
             return;
@@ -360,6 +361,8 @@ class Schema
                 if (! $type instanceof Type) {
                     $this->throwNotAType($type, $typeName);
                 }
+            } elseif ($type === null) {
+                return null;
             } else {
                 $this->throwNotAType($type, $typeName);
             }
