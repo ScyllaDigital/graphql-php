@@ -34,8 +34,8 @@ class SchemaConfig
 
     public ?ObjectType $subscription = null;
 
-    /** @var array<Type>|(callable(): array<Type>) */
-    public $types = [];
+    /** @var array<Type> */
+    public array $types = [];
 
     /** @var array<Directive>|null */
     public ?array $directives = null;
@@ -158,21 +158,21 @@ class SchemaConfig
     }
 
     /**
-     * @return array<Type>|(callable(): array<Type>)
+     * @return array<Type>
      *
      * @api
      */
-    public function getTypes()
+    public function getTypes(): array
     {
         return $this->types;
     }
 
     /**
-     * @param array<Type>|(callable(): array<Type>) $types
+     * @param array<Type> $types
      *
      * @api
      */
-    public function setTypes($types): self
+    public function setTypes(array $types): self
     {
         $this->types = $types;
 

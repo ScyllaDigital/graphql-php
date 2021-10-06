@@ -51,7 +51,7 @@ class ASTDefinitionBuilder
     /** @var array<string, bool> */
     private array $options;
 
-    /** @var callable(string, ?Node): ?Type */
+    /** @var callable(string, ?Node): Type */
     private $resolveType;
 
     /** @var callable|null */
@@ -65,7 +65,7 @@ class ASTDefinitionBuilder
      * phpcs:disable Squiz.Commenting.FunctionComment.SpacingAfterParamType
      * @param array<string, Node&TypeDefinitionNode> $typeDefinitionsMap
      * @param array<string, bool> $options
-     * @param callable(string, ?Node): ?Type $resolveType
+     * @param callable(string, ?Node): Type $resolveType
      */
     public function __construct(
         array $typeDefinitionsMap,
@@ -78,7 +78,7 @@ class ASTDefinitionBuilder
         $this->resolveType         = $resolveType;
         $this->typeConfigDecorator = $typeConfigDecorator;
 
-        $this->cache = [];
+        $this->cache = Type::getAllBuiltInTypes();
     }
 
     public function buildDirective(DirectiveDefinitionNode $directiveNode): Directive

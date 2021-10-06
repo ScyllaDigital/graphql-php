@@ -20,9 +20,7 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
-use GraphQL\Type\Introspection;
 use GraphQL\Utils\BuildSchema;
 use GraphQL\Utils\SchemaPrinter;
 use PHPUnit\Framework\TestCase;
@@ -977,8 +975,8 @@ type Query {
       scalar __Schema
         ');
 
-        self::assertSame($schema->getType('ID'), Type::id());
-        self::assertSame($schema->getType('__Schema'), Introspection::_schema());
+        self::assertNotNull($schema->getType('ID'));
+        self::assertNotNull($schema->getType('__Schema'));
     }
 
     public function testDoesNotIncludeUnusedStandardTypes(): void
@@ -1102,13 +1100,9 @@ type Yellow {
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Unknown type referenced')
-     */
     public function testUnknownTypeReferenced(): void
     {
-        $this->expectException(Error::class);
-        $this->expectExceptionMessage('Type "Bar" not found in document.');
+        $this->expectExceptionObject(BuildSchema::unknownType('Bar'));
         $body   = '
 schema {
   query: Hello
@@ -1125,8 +1119,7 @@ type Hello {
 
     public function testUnknownTypeInInterfaceList(): void
     {
-        $this->expectException(Error::class);
-        $this->expectExceptionMessage('Type "Bar" not found in document.');
+        $this->expectExceptionObject(BuildSchema::unknownType('Bar'));
         $body   = '
 type Query implements Bar {
   field: String
@@ -1139,8 +1132,7 @@ type Query implements Bar {
 
     public function testUnknownTypeInUnionList(): void
     {
-        $this->expectException(Error::class);
-        $this->expectExceptionMessage('Type "Bar" not found in document.');
+        $this->expectExceptionObject(BuildSchema::unknownType('Bar'));
         $body   = '
 union TestUnion = Bar
 type Query { testUnion: TestUnion }
@@ -1185,9 +1177,6 @@ type Hello {
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Unknown subscription type')
-     */
     public function testUnknownSubscriptionType(): void
     {
         $this->expectException(Error::class);
@@ -1211,9 +1200,6 @@ type Wat {
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Does not consider directive names')
-     */
     public function testDoesNotConsiderDirectiveNames(): void
     {
         $body = '
@@ -1228,9 +1214,6 @@ type Wat {
         BuildSchema::build($doc);
     }
 
-    /**
-     * @see it('Does not consider operation names')
-     */
     public function testDoesNotConsiderOperationNames(): void
     {
         $this->expectException(Error::class);
@@ -1246,9 +1229,6 @@ query Foo { field }
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Does not consider fragment names')
-     */
     public function testDoesNotConsiderFragmentNames(): void
     {
         $this->expectException(Error::class);
@@ -1264,9 +1244,6 @@ fragment Foo on Type { field }
         BuildSchema::buildAST($doc);
     }
 
-    /**
-     * @see it('Forbids duplicate type definitions')
-     */
     public function testForbidsDuplicateTypeDefinitions(): void
     {
         $body = '

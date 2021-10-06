@@ -93,33 +93,6 @@ class Schema
         // marked with assumeValid to avoid an additional type system validation.
         if ($config->getAssumeValid()) {
             $this->validationErrors = [];
-        } else {
-            // Otherwise check for common mistakes during construction to produce
-            // clear and early error messages.
-            Utils::invariant(
-                $config instanceof SchemaConfig,
-                'Schema constructor expects instance of GraphQL\Type\SchemaConfig or an array with keys: %s; but got: %s',
-                implode(
-                    ', ',
-                    [
-                        'query',
-                        'mutation',
-                        'subscription',
-                        'types',
-                        'directives',
-                        'typeLoader',
-                    ]
-                ),
-                Utils::getVariableType($config)
-            );
-            Utils::invariant(
-                ($config->types ?? []) !== [] || is_array($config->types) || is_callable($config->types),
-                '"types" must be array or callable if provided but got: ' . Utils::getVariableType($config->types)
-            );
-            Utils::invariant(
-                $config->directives === null || is_array($config->directives),
-                '"directives" must be Array if provided but got: ' . Utils::getVariableType($config->directives)
-            );
         }
 
         $this->config            = $config;
@@ -143,24 +116,13 @@ class Schema
             $this->resolvedTypes[$subscription->name] = $subscription;
         }
 
-        if (is_array($this->config->types)) {
-            foreach ($this->resolveAdditionalTypes() as $type) {
-                $typeName = $type->name;
-                if (isset($this->resolvedTypes[$typeName])) {
-                    Utils::invariant(
-                        $type === $this->resolvedTypes[$typeName],
-                        sprintf(
-                            'Schema must contain unique named types but contains multiple types named "%s" (see https://webonyx.github.io/graphql-php/type-definitions/#type-registry).',
-                            $type
-                        )
-                    );
-                }
-
-                $this->resolvedTypes[$typeName] = $type;
-            }
+        if (is_array($config->types)) {
+            $this->resolveAdditionalTypes($config->types);
         }
 
-//        $this->resolvedTypes += Type::getStandardTypes();
+        // TODO differs from the reference implementation which does not include those types in any case
+        $this->resolvedTypes += Type::getStandardTypes();
+
         $this->resolvedTypes += Introspection::getTypes();
 
         if ($this->config->typeLoader !== null) {
@@ -171,32 +133,25 @@ class Schema
         $this->getTypeMap();
     }
 
-    private function resolveAdditionalTypes(): Generator
+    private function resolveAdditionalTypes(array $types): void
     {
-        $types = $this->config->types;
-
-        if (is_callable($types)) {
-            $types = $types();
-        }
-
-        if (! is_array($types) && ! $types instanceof Traversable) {
-            throw new InvariantViolation(sprintf(
-                'Schema types callable must return array or instance of Traversable but got: %s',
-                Utils::getVariableType($types)
-            ));
-        }
-
         foreach ($types as $index => $type) {
             $type = self::resolveType($type);
             if (! $type instanceof Type) {
-                throw new InvariantViolation(sprintf(
-                    'Each entry of schema types must be instance of GraphQL\Type\Definition\Type but entry at %s is %s',
-                    $index,
-                    Utils::printSafe($type)
-                ));
+                throw new InvariantViolation(
+                    'Each entry of schema types must be instance of GraphQL\Type\Definition\Type but entry at ' . $index . ' is ' . Utils::printSafe($type)
+                );
             }
 
-            yield $type;
+            $typeName = $type->name;
+            if (isset($this->resolvedTypes[$typeName])) {
+                Utils::invariant(
+                    $type === $this->resolvedTypes[$typeName],
+                    'Schema must contain unique named types but contains multiple types named "' . $type . '" (see https://webonyx.github.io/graphql-php/type-definitions/#type-registry).'
+                );
+            }
+
+            $this->resolvedTypes[$typeName] = $type;
         }
     }
 
@@ -235,13 +190,6 @@ class Schema
             }
 
             $typeMap = TypeInfo::extractTypesFromDirectives($directive, $typeMap);
-        }
-
-        // When types are set as array they are resolved in constructor
-        if (is_callable($this->config->types)) {
-            foreach ($this->resolveAdditionalTypes() as $type) {
-                $typeMap = TypeInfo::extractTypes($type, $typeMap);
-            }
         }
 
         return $typeMap;
@@ -361,8 +309,6 @@ class Schema
                 if (! $type instanceof Type) {
                     $this->throwNotAType($type, $typeName);
                 }
-            } elseif ($type === null) {
-                return null;
             } else {
                 $this->throwNotAType($type, $typeName);
             }
