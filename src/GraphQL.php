@@ -14,6 +14,7 @@ use GraphQL\Language\AST\DocumentNode;
 use GraphQL\Language\Parser;
 use GraphQL\Language\Source;
 use GraphQL\Type\Definition\Directive;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema as SchemaType;
@@ -212,7 +213,7 @@ class GraphQL
     /**
      * Returns standard validation rules implementing GraphQL spec.
      *
-     * @return array<string, ValidationRule>
+     * @return array<class-string<ValidationRule>, ValidationRule>
      *
      * @api
      */
@@ -223,6 +224,8 @@ class GraphQL
 
     /**
      * Set default resolver implementation.
+     *
+     * @param callable(mixed, array, mixed, ResolveInfo): mixed $fn
      *
      * @api
      */

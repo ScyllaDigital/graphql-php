@@ -91,9 +91,9 @@ static function promiseToExecute(
 
 ```php
 /**
- * Returns directives defined in GraphQL spec
+ * Returns directives defined in GraphQL spec.
  *
- * @return Directive[]
+ * @return array<string, Directive>
  *
  * @api
  */
@@ -102,9 +102,9 @@ static function getStandardDirectives(): array
 
 ```php
 /**
- * Returns types defined in GraphQL spec
+ * Returns types defined in GraphQL spec.
  *
- * @return Type[]
+ * @return array<string, ScalarType>
  *
  * @api
  */
@@ -113,7 +113,8 @@ static function getStandardTypes(): array
 
 ```php
 /**
- * Replaces standard types with types from this list (matching by name)
+ * Replaces standard types with types from this list (matching by name).
+ *
  * Standard types not listed here remain untouched.
  *
  * @param array<string, ScalarType> $types
@@ -125,9 +126,9 @@ static function overrideStandardTypes(array $types): void
 
 ```php
 /**
- * Returns standard validation rules implementing GraphQL spec
+ * Returns standard validation rules implementing GraphQL spec.
  *
- * @return ValidationRule[]
+ * @return array<class-string<ValidationRule>, ValidationRule>
  *
  * @api
  */
@@ -136,7 +137,9 @@ static function getStandardValidationRules(): array
 
 ```php
 /**
- * Set default resolver implementation
+ * Set default resolver implementation.
+ *
+ * @param callable(mixed, array, mixed, ResolveInfo): mixed $fn
  *
  * @api
  */
@@ -1434,7 +1437,7 @@ static function validate(
 /**
  * Returns all global validation rules.
  *
- * @return ValidationRule[]
+ * @return array<class-string<ValidationRule>, ValidationRule>
  *
  * @api
  */
@@ -2343,19 +2346,36 @@ static function typeFromAST(GraphQL\Type\Schema $schema, $inputTypeNode): GraphQ
 static function getOperationAST(GraphQL\Language\AST\DocumentNode $document, string $operationName = null): GraphQL\Language\AST\OperationDefinitionNode
 ```
 
+```php
+/**
+ * Provided a collection of ASTs, presumably each from different files,
+ * concatenate the ASTs together into batched AST, useful for validating many
+ * GraphQL source files which together represent one conceptual application.
+ *
+ * @param array<DocumentNode> $documents
+ *
+ * @api
+ */
+static function concatAST(array $documents): GraphQL\Language\AST\DocumentNode
+```
+
 ## GraphQL\Utils\SchemaPrinter
 
-Given an instance of Schema, prints it in schema definition language.
+Prints the contents of a Schema in schema definition language.
+
+@phpstan-type Options array{commentDescriptions?: bool}
+Available options:
+
+- commentDescriptions:
+  Provide true to use preceding comments as the description.
+  This option is provided to ease adoption and will be removed in v16.
 
 ### GraphQL\Utils\SchemaPrinter Methods
 
 ```php
 /**
  * @param array<string, bool> $options
- *    Available options:
- *    - commentDescriptions:
- *        Provide true to use preceding comments as the description.
- *        This option is provided to ease adoption and will be removed in v16.
+ * @phpstan-param Options $options
  *
  * @api
  */
@@ -2365,6 +2385,7 @@ static function doPrint(GraphQL\Type\Schema $schema, array $options = []): strin
 ```php
 /**
  * @param array<string, bool> $options
+ * @phpstan-param Options $options
  *
  * @api
  */
