@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace GraphQL\Type;
 
-use Generator;
 use GraphQL\Error\Error;
 use GraphQL\Error\InvariantViolation;
 use GraphQL\GraphQL;
@@ -21,7 +20,6 @@ use GraphQL\Utils\InterfaceImplementations;
 use GraphQL\Utils\TypeInfo;
 use GraphQL\Utils\Utils;
 use InvalidArgumentException;
-use Traversable;
 
 use function get_class;
 use function implode;
