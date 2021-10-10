@@ -46,16 +46,16 @@ use function json_encode;
 class BuildClientSchema
 {
     /** @var array<string, mixed> */
-    private $introspection;
+    private array $introspection;
 
     /**
      * @var array<string, bool>
      * @phpstan-var Options
      */
-    private $options;
+    private array $options;
 
     /** @var array<string, NamedType&Type> */
-    private $typeMap;
+    private array $typeMap;
 
     /**
      * @param array<string, mixed> $introspectionQuery
