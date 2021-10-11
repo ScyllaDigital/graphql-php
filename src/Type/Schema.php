@@ -123,7 +123,7 @@ class Schema
 
         $this->resolvedTypes += Introspection::getTypes();
 
-        if ($this->config->typeLoader !== null) {
+        if (isset($this->config->typeLoader)) {
             return;
         }
 
